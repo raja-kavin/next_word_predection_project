@@ -1,5 +1,5 @@
-tensorflow==2.21.0
-numpy==2.5.4
+tensorflow
+numpy
 scikit-learn
 Flask
 gunicorn
