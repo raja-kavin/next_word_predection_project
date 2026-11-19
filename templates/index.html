@@ -1,0 +1,419 @@
+<!doctype html>
+<html>
+  <head>
+    <title>RNN vs LSTM Next Word Prediction</title>
+
+    <style>
+      body {
+        font-family: Arial;
+        background: #f4f6f9;
+        text-align: center;
+        padding: 40px;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        max-width: 650px;
+        margin: auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px #ccc;
+      }
+
+      input {
+        padding: 12px;
+        width: 75%;
+        margin: 15px;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+      }
+
+      button {
+        padding: 12px 25px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .results {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+      }
+
+      .card {
+        background: #eef2ff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 50%;
+      }
+
+      .word {
+        font-size: 22px;
+        font-weight: bold;
+        color: #1d4ed8;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>RNN vs LSTM Next Word Prediction</h2>
+
+      <form method="POST">
+        <input
+          type="text"
+          name="sentence"
+          placeholder="Enter a sentence"
+          value="{{ sentence }}"
+          required
+        />
+
+        <br />
+
+        <button type="submit">Predict Next Word</button>
+      </form>
+
+      <div class="results">
+        <div class="card">
+          <h3>Simple RNN</h3>
+
+          {% if rnn_word %}
+          <p>Predicted Word:</p>
+          <p class="word">{{ rnn_word }}</p>
+          {% endif %}
+
+          <p>Test Accuracy: {{ rnn_accuracy }}%</p>
+        </div>
+
+        <div class="card">
+          <h3>LSTM</h3>
+
+          {% if lstm_word %}
+          <p>Predicted Word:</p>
+          <p class="word">{{ lstm_word }}</p>
+          {% endif %}
+
+          <p>Test Accuracy: {{ lstm_accuracy }}%</p>
+        </div>
+      </div>
+
+      <h3>Accuracy Comparison</h3>
+
+      <p>RNN: {{ rnn_accuracy }}%</p>
+      <p>LSTM: {{ lstm_accuracy }}%</p>
+    </div>
+  </body>
+</html>
+
+<!--  <!doctype html>
+<html>
+  <head>
+    <title>Live Next Word Prediction</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f3f4f6;
+        padding: 40px 15px;
+      }
+
+      .container {
+        max-width: 750px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px #ddd;
+      }
+
+      h2,
+      .description {
+        text-align: center;
+      }
+
+      .editor {
+        position: relative;
+        margin-top: 25px;
+      }
+
+      #suggestion {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 16px;
+        font:
+          17px Arial,
+          sans-serif;
+        white-space: pre;
+        overflow: hidden;
+        pointer-events: none;
+        color: #aaa;
+        border: 1px solid transparent;
+        z-index: 1;
+      }
+
+      #sentence {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 16px;
+        font:
+          17px Arial,
+          sans-serif;
+        color: #222;
+        background: transparent;
+        border: 1px solid #aaa;
+        border-radius: 8px;
+        outline-color: #2563eb;
+      }
+
+      #sentence::placeholder {
+        color: #999;
+      }
+
+      .help {
+        font-size: 13px;
+        color: #666;
+        margin-top: 8px;
+      }
+
+      .results {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .card {
+        padding: 20px;
+        background: #eff6ff;
+        border-radius: 8px;
+      }
+
+      .word {
+        font-size: 23px;
+        font-weight: bold;
+        color: #2563eb;
+      }
+
+      select {
+        padding: 9px;
+        border-radius: 6px;
+      }
+
+      button {
+        padding: 9px 15px;
+        border: 0;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        cursor: pointer;
+      }
+
+      @media (max-width: 550px) {
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Live Next Word Prediction</h2>
+
+      <p class="description">
+        Type a sentence and watch the next-word suggestion appear.
+      </p>
+
+      <label for="model">Choose model: </label>
+
+      <select id="model">
+        <option value="lstm">LSTM</option>
+        <option value="rnn">Simple RNN</option>
+      </select>
+
+      <div class="editor">
+        <div id="suggestion" aria-hidden="true"></div>
+
+        <input
+          type="text"
+          id="sentence"
+          placeholder="Start typing here..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <p class="help">
+        Press Tab to accept the suggested word. Press Escape to hide the
+        suggestion.
+      </p>
+
+      <div class="results">
+        <div class="card">
+          <h3>Simple RNN</h3>
+          <p>Suggested next word:</p>
+          <div class="word" id="rnnWord">—</div>
+        </div>
+
+        <div class="card">
+          <h3>LSTM</h3>
+          <p>Suggested next word:</p>
+          <div class="word" id="lstmWord">—</div>
+        </div>
+      </div>
+
+      <p id="status" class="help"></p>
+
+      <button id="clear" type="button">Clear text</button>
+    </div>
+
+    <script>
+      const sentenceInput = document.getElementById("sentence");
+      const suggestion = document.getElementById("suggestion");
+      const modelSelect = document.getElementById("model");
+
+      const rnnWord = document.getElementById("rnnWord");
+      const lstmWord = document.getElementById("lstmWord");
+      const status = document.getElementById("status");
+
+      let currentSuggestion = "";
+      let requestNumber = 0;
+      let debounceTimer;
+      let hideSuggestion = false;
+
+      function displaySuggestion() {
+        const text = sentenceInput.value;
+
+        // Keep the input text visible in the overlay
+        suggestion.textContent = text;
+
+        if (currentSuggestion && text.length > 0 && !hideSuggestion) {
+          suggestion.textContent =
+            text + (text.endsWith(" ") ? "" : " ") + currentSuggestion;
+
+          // Grey out only the predicted word
+          const typedLength = text.length;
+          const start = typedLength + (text.endsWith(" ") ? 0 : 1);
+
+          suggestion.innerHTML = "";
+
+          const typedSpan = document.createElement("span");
+          typedSpan.textContent = text;
+
+          const predictedSpan = document.createElement("span");
+          predictedSpan.style.color = "#aaa";
+          predictedSpan.textContent =
+            (text.endsWith(" ") ? "" : " ") + currentSuggestion;
+
+          suggestion.appendChild(typedSpan);
+          suggestion.appendChild(predictedSpan);
+        }
+      }
+
+      async function getPrediction() {
+        const text = sentenceInput.value.trim();
+        const thisRequest = ++requestNumber;
+
+        currentSuggestion = "";
+        displaySuggestion();
+
+        if (!text) {
+          rnnWord.textContent = "—";
+          lstmWord.textContent = "—";
+          status.textContent = "";
+          return;
+        }
+
+        status.textContent = "Predicting...";
+
+        try {
+          const response = await fetch("/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sentence: text,
+            }),
+          });
+
+          const result = await response.json();
+
+          // Ignore old responses if the user has typed more
+          if (thisRequest !== requestNumber) return;
+
+          rnnWord.textContent = result.rnn || "No prediction";
+          lstmWord.textContent = result.lstm || "No prediction";
+
+          currentSuggestion = result[modelSelect.value] || "";
+
+          status.textContent = currentSuggestion
+            ? "Suggestion ready"
+            : "No known words to predict";
+
+          displaySuggestion();
+        } catch (error) {
+          if (thisRequest === requestNumber) {
+            status.textContent = "Could not connect to Flask.";
+          }
+        }
+      }
+
+      sentenceInput.addEventListener("input", function () {
+        hideSuggestion = false;
+        clearTimeout(debounceTimer);
+
+        debounceTimer = setTimeout(getPrediction, 300);
+      });
+
+      modelSelect.addEventListener("change", function () {
+        displaySuggestion();
+      });
+
+      sentenceInput.addEventListener("keydown", function (event) {
+        if (event.key === "Tab" && currentSuggestion) {
+          event.preventDefault();
+
+          const text = sentenceInput.value;
+
+          sentenceInput.value =
+            text + (text.endsWith(" ") ? "" : " ") + currentSuggestion + " ";
+
+          currentSuggestion = "";
+          hideSuggestion = false;
+          displaySuggestion();
+
+          getPrediction();
+        }
+
+        if (event.key === "Escape") {
+          hideSuggestion = true;
+          currentSuggestion = "";
+          displaySuggestion();
+        }
+      });
+
+      document.getElementById("clear").addEventListener("click", function () {
+        sentenceInput.value = "";
+        currentSuggestion = "";
+        hideSuggestion = false;
+        displaySuggestion();
+
+        rnnWord.textContent = "—";
+        lstmWord.textContent = "—";
+        status.textContent = "";
+
+        requestNumber++;
+        sentenceInput.focus();
+      });
+    </script>
+  </body>
+</html>
+-->
